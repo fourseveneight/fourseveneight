@@ -1,10 +1,9 @@
 const express = require('express');
 
-const app = express()
+const articleRouter = require('./routes/articleRouter');
 
-app.use((req, res, next) => {
-    req.requestTime = new Date().toISOString();
-    next();
-  });
-  
+const app = express();
+
+app.use('/api/v1/articles', articleRouter);
+
 module.exports = app;

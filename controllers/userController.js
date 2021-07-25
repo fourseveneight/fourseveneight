@@ -171,6 +171,16 @@ exports.changePassword = (req, res, next) => {
         },
       });
     }
+    if (user.passwordResetExpires) {
+      if (user.passwordResetExpires - req.params.timestamp > 600000) {
+        return res.status(400).json({
+          status: 'failed',
+          data: {
+            message: 'Reset link is only valid for one use. Please try again!',
+          },
+        });
+      }
+    }
     //Otherwise, generate a salted and hashed password, and replace the user's password with this
     bcrypt.genSalt(10, (err, salt) => {
       //Generate a salt
@@ -180,10 +190,12 @@ exports.changePassword = (req, res, next) => {
         if (err) throw err;
         user.password = undefined; //set it to undefined first, for extra security
         user.password = hash; //then set it to the new salted and hashed password
+        user.passwordResetExpires = Date.now() + 1000000;
         user
           .save() //Save the user in the database
           .then(() => {
             //then send a success message (just a json for now)
+
             res.status(200).json({
               status: 'success',
               data: {

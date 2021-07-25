@@ -44,6 +44,9 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: {
     type: Date,
   },
+  passwordResetExpires: {
+    type: Date,
+  },
 });
 
 const User = mongoose.model('User', userSchema);

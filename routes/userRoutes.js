@@ -30,4 +30,10 @@ router
 
 router.get('/logout', userController.logout);
 
+router.route('/forgot-password').post(userController.forgotPassword);
+
+router
+  .route('/change-password/:timestamp/:hash/:id')
+  .post(userController.changePassword);
+
 module.exports = router;

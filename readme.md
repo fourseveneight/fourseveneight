@@ -7,4 +7,9 @@
 Love you autumn
 -a
 
+## Usage:
+
+1. Feel free to take and use any of the code I've written here for your own purposes.
+2. If you have any questions, comments, or suggestions, shoot me an email at anishsinha0128@gmail.com and I'll do my best to respond (:
+
 ## documentation:

@@ -2,9 +2,9 @@ const passport = require('passport'); //get passport
 const bcrypt = require('bcryptjs');
 const factory = require('./handlerFactory'); //import factory
 const User = require('../models/userModel'); //import user model
+const sendEmail = require('../util/email');
 //const catchAsync = require('../util/catchAsync'); //import catchAsync utility for replacement of try...catch
 
-exports.signupUser = factory.createOne(User); //Basic CRUD ops
 exports.getAllUsers = factory.getAll(User);
 exports.getUser = factory.getOne(User);
 exports.updateUser = factory.updateOne(User);
@@ -110,6 +110,36 @@ exports.logout = (req, res, next) => {
     status: 'success',
     data: {
       message: 'successfully logged out',
+    },
+  });
+};
+
+exports.forgotPassword = (req, res, next) => {
+  //User is stored in req.user IF logged in, so if req.user, we don't need to get their email address since we already know it
+  if (req.user) {
+    sendEmail({
+      email: req.user.email, //Send email to address associated with currently logged in account
+      subject: 'Password change link',
+      message: 'password-reset-token-goes-here',
+    });
+    res.status(200).json({
+      //Send JSON to verify it worked (will be changed in production)
+      status: 'success',
+      data: {
+        message: 'Check the email associated with this account.',
+      },
+    });
+  }
+  sendEmail({
+    email: req.body.email, //Send email to address found in req.body, since the user associated with this account is not logged in
+    subject: 'Password change link',
+    message: 'password-reset-token-goes-here',
+  });
+  res.status(200).json({
+    //Send JSON to verify it worked (will be changed in production)
+    status: 'success',
+    data: {
+      message: 'Check the inbox of the email you entered',
     },
   });
 };

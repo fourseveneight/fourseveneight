@@ -140,7 +140,7 @@ exports.forgotPassword = async (req, res, next) => {
 
 exports.changePassword = (req, res, next) => {
   const { password, passwordConfirm } = req.body; //split req.body into two variables
-  const errors = [];
+  const errors = []; //empty array to store errors
   //Do password validation
   if (password !== passwordConfirm) {
     errors.push({ msg: 'passwords do not match!' });
@@ -148,8 +148,12 @@ exports.changePassword = (req, res, next) => {
   if (password.length < 8) {
     errors.push({ msg: 'new password length cannot be below 8 characters!' });
   }
+  if (Date.now() - req.params.timestamp >= 600000) {
+    //Reset link is only valid for 10 minutes
+    errors.push({ msg: 'password reset link has expired!' });
+  }
   if (errors.length > 0) {
-    res.status(400).json({
+    return res.status(400).json({
       status: 'failed',
       data: {
         errors,
@@ -160,7 +164,7 @@ exports.changePassword = (req, res, next) => {
     //Find the user by the ObjectId in req.params (3rd part of the token)
     if (!user) {
       //If this is unsuccessful:
-      res.status(400).json({
+      return res.status(400).json({
         status: 'failed',
         data: {
           message: 'malformed reset token!',

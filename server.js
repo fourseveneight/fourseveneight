@@ -1,3 +1,9 @@
+/********************************************************
+ *
+ * *Server setup.
+ *
+ * *****************************************************/
+
 const dotenv = require('dotenv'); //Require dotenv module
 
 dotenv.config({ path: `./config/config.env` }); //Configure path for environment variables
@@ -9,9 +15,16 @@ const passport = require('passport'); //import passport
 require('./auth/passportConfig')(passport); //require file
 
 const app = express(); //Initialize application
+
 const port = process.env.PORT || 8000; //Define port as the port listed in ./config/config.env or 8000
+
+const DB = process.env.DATABASE.replace(
+  '<password>',
+  process.env.DATABASE_PASSWORD
+); //Initialize DB variable by replacing the password field in the string with the environment variable DATABASE_PASSWORD
+
 app.use(express.json()); //Use express.json() to parse request body
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false })); //set extended to false to avoid deprecation warnings
 app.use(
   session({
     secret: `${process.env.SESSION_SECRET}`, // use session secret in config.env
@@ -28,11 +41,6 @@ process.on('uncaughtException', () => {
 });
 
 const currentTime = new Date(); //Set current time
-
-const DB = process.env.DATABASE.replace(
-  '<password>',
-  process.env.DATABASE_PASSWORD
-); //Initialize DB variable by replacing the password field in the string with the environment variable DATABASE_PASSWORD
 
 mongoose //connect DB
   .connect(DB, {

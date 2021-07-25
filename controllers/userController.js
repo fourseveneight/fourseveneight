@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const factory = require('./handlerFactory'); //import factory
 const User = require('../models/userModel'); //import user model
 const sendEmail = require('../util/email');
-//const catchAsync = require('../util/catchAsync'); //import catchAsync utility for replacement of try...catch
+const { createResetToken } = require('../auth/auth');
 
 exports.getAllUsers = factory.getAll(User);
 exports.getUser = factory.getOne(User);
@@ -142,4 +142,17 @@ exports.forgotPassword = (req, res, next) => {
       message: 'Check the inbox of the email you entered',
     },
   });
+};
+
+exports.changePassword = (req, res, next) => {
+  const user = User.findOne({ email: req.body.email });
+  if (!user) {
+    res.status(404).json({
+      status: 'failed',
+      data: {
+        message: 'No user with that email found',
+      },
+    });
+  }
+  const token = createResetToken();
 };

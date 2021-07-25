@@ -1,13 +1,13 @@
 const express = require('express'); //Import express
 const articleController = require('../controllers/articleController'); //Import necessary controllers
-const { verifyAuthenticated } = require('../auth/auth');
+const { verifyAuthenticated, restrictTo } = require('../auth/auth');
 
 const router = express.Router(); //Initialize express router
 
 router
   .route('/') //Route on /api/v1/articles/
   .get(articleController.getAllArticles) //get all articles
-  .post(verifyAuthenticated, articleController.createArticle); //create new article
+  .post(verifyAuthenticated, restrictTo, articleController.createArticle); //create new article
 
 router
   .route('/:slug') //Make slug a query parameter

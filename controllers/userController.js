@@ -100,8 +100,8 @@ exports.register = (req, res) => {
               .then(() => {
                 sendEmail({
                   email: newUser.email,
-                  subject: 'Account confirmation',
-                  message: `localhost:8000/api/v1/users/confirm/`,
+                  subject: 'Account confirmation email',
+                  message: `localhost:8000/api/v1/users/confirm/${newUser._id}`,
                 });
                 //then send a success message (just a json for now)
                 res.status(200).json({
@@ -126,6 +126,28 @@ exports.register = (req, res) => {
       }
     });
   }
+};
+
+exports.confirmAccount = (req, res, next) => {
+  User.findOne({ _id: req.params.id }).then((user) => {
+    if (!user) {
+      res.status(404).json({
+        status: 'failure',
+        data: {
+          message: 'Unable to confirm account!',
+        },
+      });
+    }
+    user.active = true;
+    user.save().then(() => {
+      res.status(200).json({
+        status: 'success',
+        data: {
+          message: 'Account successfully activated!',
+        },
+      });
+    });
+  });
 };
 
 exports.logout = (req, res, next) => {

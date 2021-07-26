@@ -15,9 +15,8 @@ router
   .post(sanitizeBody, userController.register);
 
 router.get('/logout', userController.logout);
-
 router.route('/recover').post(userController.recover);
-
 router.route('/reset/:token').post(userController.resetPassword);
+router.route('/confirm/:id').get(userController.confirmAccount);
 
 module.exports = router;

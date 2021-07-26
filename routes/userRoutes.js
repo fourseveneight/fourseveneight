@@ -16,14 +16,8 @@ router
 
 router.get('/logout', userController.logout);
 
-router.route('/forgot-password').post(userController.forgotPassword);
+router.route('/recover').post(userController.recover);
 
-router
-  .route('/change-password/:timestamp/:hash/:id')
-  .post(userController.changePassword);
-
-router
-  .route('/confirm/:timestamp/:hash/:id')
-  .get(userController.confirmAccount);
+router.route('/reset/:token').post(userController.resetPassword);
 
 module.exports = router;

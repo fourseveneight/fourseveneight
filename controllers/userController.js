@@ -1,9 +1,9 @@
+/* eslint-disable no-shadow */
 const passport = require('passport'); //get passport
 const bcrypt = require('bcryptjs');
 const factory = require('./handlerFactory'); //import factory
 const User = require('../models/userModel'); //import user model
 const sendEmail = require('../util/email'); //Import email send utility
-const { createToken } = require('../auth/auth'); //Import createResetToken from auth
 
 //TODO: Protect these routes
 exports.getAllUsers = factory.getAll(User);
@@ -98,12 +98,10 @@ exports.register = (req, res) => {
             newUser
               .save() //Save the user in the database
               .then(() => {
-                const token = createToken();
-                token.push(newUser._id);
                 sendEmail({
                   email: newUser.email,
                   subject: 'Account confirmation',
-                  message: `localhost:8000/api/v1/users/confirm/${token[0]}/${token[1]}/${token[2]}`,
+                  message: `localhost:8000/api/v1/users/confirm/`,
                 });
                 //then send a success message (just a json for now)
                 res.status(200).json({
@@ -140,96 +138,91 @@ exports.logout = (req, res, next) => {
   });
 };
 
-exports.forgotPassword = async (req, res, next) => {
-  const user = await User.findOne({ email: req.body.email });
-  if (!user) {
-    //If there is no user, return an error
-    return res.status(404).json({
-      status: 'failed',
-      data: {
-        message: 'No user with that email found',
-      },
-    });
-  }
-  const token = createToken(); //Create a token with two of the necessary parts
-  token.push(user.id); //Add the third part
-  sendEmail({
-    email: req.body.email, //Send email to the email passed into the body
-    subject: 'Password change link',
-    message: `localhost:8000/api/v1/users/change-password/${token[0]}/${token[1]}/${token[2]} is your password reset link`,
-  });
-  res.status(200).json({
-    status: 'success',
-    data: {
-      message: 'successfully sent email with reset token!',
-    },
-  });
-};
-
-exports.changePassword = (req, res, next) => {
-  const { password, passwordConfirm } = req.body; //split req.body into two variables
-  const errors = []; //empty array to store errors
-  //Do password validation
-  if (password !== passwordConfirm) {
-    errors.push({ msg: 'passwords do not match!' });
-  }
-  if (password.length < 8) {
-    errors.push({ msg: 'new password length cannot be below 8 characters!' });
-  }
-  if (Date.now() - req.params.timestamp >= 600000) {
-    //Reset link is only valid for 10 minutes
-    errors.push({ msg: 'password reset link has expired!' });
-  }
-  if (errors.length > 0) {
-    return res.status(400).json({
-      status: 'failed',
-      data: {
-        errors,
-      },
-    });
-  }
-  User.findById({ _id: req.params.id })
+exports.recover = (req, res, next) => {
+  User.findOne({ email: req.body.email })
     .then((user) => {
-      //Find the user by the ObjectId in req.params (3rd part of the token)
-      if (!user) {
-        //If this is unsuccessful:
-        return res.status(400).json({
+      if (!user)
+        return res.status(401).json({
           status: 'failed',
           data: {
-            message: 'malformed reset token!',
+            message:
+              'The email address entered is not associated with any account!',
           },
         });
-      }
-      if (user.passwordResetExpires) {
-        if (user.passwordResetExpires - req.params.timestamp > 600000) {
-          return res.status(400).json({
-            status: 'failed',
+      user.generatePasswordResetToken();
+      // eslint-disable-next-line no-shadow
+      user
+        .save()
+        .then((user) => {
+          const link = `localhost:8000/api/v1/users/reset/${user.resetPasswordToken}`;
+          sendEmail({
+            email: req.body.email, //Send email to the email passed into the body
+            subject: 'Password change link',
+            message: `localhost:8000/api/v1/users/change-password/${link} is your password reset link`,
+          });
+          res.status(200).json({
+            status: 'success',
             data: {
-              message:
-                'Reset link is only valid for one use. Password can only be changed once every 10 minutes. Please request another link in 10 minutes!',
+              message: 'Check your email for your password reset link',
             },
           });
-        }
-      }
-      //Otherwise, generate a salted and hashed password, and replace the user's password with this
+        })
+        .catch(() => {
+          res.status(500).json({
+            status: 'failed',
+            data: {
+              message: 'Internal server error!',
+            },
+          });
+        });
+    })
+    .catch(() => {
+      res.status(500).json({
+        status: 'failed',
+        data: {
+          message: 'Internal server error',
+        },
+      });
+    });
+};
+
+exports.resetPassword = (req, res, next) => {
+  User.findOne({
+    resetPasswordToken: req.params.token,
+    resetPasswordExpires: { $gt: Date.now() },
+  })
+    .then((user) => {
+      if (!user)
+        return res.status(401).json({
+          status: 'failed',
+          data: {
+            message: 'Password reset token is invalid or has expired!',
+          },
+        });
+      user.password = req.body.password;
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpires = undefined;
       bcrypt.genSalt(10, (err, salt) => {
         //Generate a salt
         // eslint-disable-next-line no-shadow
-        bcrypt.hash(req.body.password, salt, (err, hash) => {
-          //Then a hash. Our password is now successfully salted and hashed
+        bcrypt.hash(user.password, salt, (err, hash) => {
+          //Then a hash. Our password is now successfully hashed
           if (err) throw err;
-          user.password = undefined; //set it to undefined first, for extra security
           user.password = hash; //then set it to the new salted and hashed password
-          user.passwordResetExpires = Date.now() + 600000;
+
           user
             .save() //Save the user in the database
             .then(() => {
+              sendEmail({
+                email: user.email,
+                subject: 'Confirming reset password',
+                message: 'Your password was successfully reset!',
+              });
               //then send a success message (just a json for now)
-
               res.status(200).json({
                 status: 'success',
                 data: {
-                  message: 'password successfully changed!',
+                  message: 'Password successfully reset!',
                 },
               });
             })
@@ -246,43 +239,11 @@ exports.changePassword = (req, res, next) => {
       });
     })
     .catch(() => {
-      res.status(400).json({
+      res.status(500).json({
         status: 'failed',
         data: {
-          message: 'Invalid ID!',
+          message: 'Internal server error!',
         },
       });
     });
-};
-
-exports.confirmAccount = (req, res, next) => {
-  User.findById({ _id: req.params.id }).then((user) => {
-    if (!user) {
-      return res.status(400).json({
-        status: 'failed',
-        data: {
-          message: 'Unable to confirm your account. Please try again!',
-        },
-      });
-    }
-    user.active = true;
-    user
-      .save()
-      .then(() => {
-        res.status(200).json({
-          status: 'success',
-          data: {
-            message: 'Account successfully activated!',
-          },
-        });
-      })
-      .catch(() => {
-        res.status(500).json({
-          status: 'failed',
-          data: {
-            message: 'Internal server error! Please try again.',
-          },
-        });
-      });
-  });
 };

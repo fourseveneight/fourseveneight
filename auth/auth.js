@@ -7,11 +7,34 @@
 const crypto = require('crypto');
 
 module.exports = {
+  sanitizeBody: function (req, res, next) {
+    const body = { ...req.body };
+    if (Object.prototype.hasOwnProperty.call(body, 'role')) {
+      res.status(403).send({
+        status: 'failed',
+        data: {
+          message: 'current account not authorized to designate role!',
+        },
+      });
+    }
+    next();
+  },
+  checkStatus: function (req, res, next) {
+    if (req.user.active === true) {
+      return next();
+    }
+    return res.status(403).json({
+      status: 'failed',
+      data: {
+        message: 'Must confirm your account to access this resource!',
+      },
+    });
+  },
   verifyAuthenticated: function (req, res, next) {
     if (req.isAuthenticated()) {
       return next();
     }
-    res.status(403).json({
+    return res.status(403).json({
       status: 'failed',
       data: {
         message: 'unable to authorize',
@@ -30,7 +53,7 @@ module.exports = {
     });
   },
   //Function to create password reset token
-  createResetToken: function () {
+  createToken: function () {
     const token = [];
     const timestamp = Date.now();
     const hash = crypto.randomBytes(20).toString('hex'); //random id

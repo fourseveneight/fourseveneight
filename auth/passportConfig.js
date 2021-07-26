@@ -7,30 +7,37 @@ const User = require('../models/userModel');
 module.exports = function (passport) {
   //this function is what's going to be exported
   passport.use(
-    new LocalStrategy({ usernameField: 'email' }, (email, password, done) => {
-      //use local strategy with the username field as the user email
-      // Match user
-      User.findOne({
-        //find user by email
-        email: email,
-      }).then((user) => {
-        if (!user) {
-          //if there's no email, send this message
-          return done(null, false, { message: 'That email is not registered' });
-        }
+    new LocalStrategy(
+      { usernameField: 'username' },
+      (username, password, done) => {
+        //use local strategy (username, password)
+        // Match user
+        User.findOne({
+          //find user by email
+          username: username,
+        })
+          .select('+password')
+          .then((user) => {
+            if (!user) {
+              //if there's no username, send this message
+              return done(null, false, {
+                message: 'That email is not registered',
+              });
+            }
 
-        // Match password
-        bcrypt.compare(password, user.password, (err, isMatch) => {
-          //match passwords with bcrypt
-          if (err) throw err; //throw err if one exists
-          if (isMatch) {
-            //if match, return null for the error and user
-            return done(null, user);
-          }
-          return done(null, false, { message: 'Password incorrect' }); //otherwise return null, nothing, and a message
-        });
-      });
-    })
+            // Match password
+            bcrypt.compare(password, user.password, (err, isMatch) => {
+              //match passwords with bcrypt
+              if (err) throw err; //throw err if one exists
+              if (isMatch) {
+                //if match, return null for the error and user
+                return done(null, user);
+              }
+              return done(null, false, { message: 'Password incorrect' }); //otherwise return null, nothing, and a message
+            });
+          });
+      }
+    )
   );
 
   passport.serializeUser((user, done) => {

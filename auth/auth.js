@@ -4,7 +4,6 @@
  * *and restricting routes
  *
  * **********************************************/
-const crypto = require('crypto');
 
 module.exports = {
   sanitizeBody: function (req, res, next) {
@@ -51,14 +50,5 @@ module.exports = {
         message: 'unable to authorize',
       },
     });
-  },
-  //Function to create password reset token
-  createToken: function () {
-    const token = [];
-    const timestamp = Date.now();
-    const hash = crypto.randomBytes(20).toString('hex'); //random id
-    token.push(timestamp);
-    token.push(hash);
-    return token;
   },
 };

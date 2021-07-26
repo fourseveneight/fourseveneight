@@ -40,15 +40,15 @@ exports.login = (req, res, next) => {
 
 exports.register = (req, res) => {
   //registration function
-  const { name, email, username, password, password2 } = req.body; //Destructure body into 5 variables
+  const { name, email, username, password, passwordConfirm } = req.body; //Destructure body into 5 variables
   const errors = []; //Initialize errors as an empty array
 
-  if (!name || !email || !password || !password2 || !username) {
+  if (!name || !email || !password || !passwordConfirm || !username) {
     //If any of these things don't exist, push an error to errors
     errors.push({ msg: 'Please enter all fields' });
   }
 
-  if (password !== password2) {
+  if (password !== passwordConfirm) {
     //If the passwords don't match, push an error
     errors.push({ msg: 'Passwords do not match' });
   }
@@ -74,7 +74,8 @@ exports.register = (req, res) => {
         res.status(400).json({
           status: 'failed',
           data: {
-            message: 'bad request!',
+            message:
+              'This email is already registered with an account. Please login or reset your password if you forgot it!',
           },
         });
       } else {
@@ -108,7 +109,7 @@ exports.register = (req, res) => {
                   status: 'success',
                   data: {
                     message:
-                      'account successfully registered!\nPlease check your email for a confirmation email to activate your account.',
+                      'account successfully registered! Please check your email for a confirmation email to activate your account.',
                   },
                 });
               })
@@ -130,16 +131,18 @@ exports.register = (req, res) => {
 
 exports.confirmAccount = (req, res, next) => {
   User.findOne({ _id: req.params.id }).then((user) => {
+    //Find user by /:id in querystring
     if (!user) {
       res.status(404).json({
         status: 'failure',
         data: {
-          message: 'Unable to confirm account!',
+          message: 'Unable to activate account!',
         },
       });
     }
-    user.active = true;
+    user.active = true; //Set active to true
     user.save().then(() => {
+      //Save the user
       res.status(200).json({
         status: 'success',
         data: {
@@ -155,7 +158,7 @@ exports.logout = (req, res, next) => {
   res.status(200).json({
     status: 'success',
     data: {
-      message: 'successfully logged out',
+      message: 'Successfully logged out!',
     },
   });
 };
@@ -167,8 +170,7 @@ exports.recover = (req, res, next) => {
         return res.status(401).json({
           status: 'failed',
           data: {
-            message:
-              'The email address entered is not associated with any account!',
+            message: `The email address ${req.body.email} is not associated with any account!`,
           },
         });
       user.generatePasswordResetToken();
@@ -179,13 +181,13 @@ exports.recover = (req, res, next) => {
           const link = `localhost:8000/api/v1/users/reset/${user.resetPasswordToken}`;
           sendEmail({
             email: req.body.email, //Send email to the email passed into the body
-            subject: 'Password change link',
-            message: `localhost:8000/api/v1/users/change-password/${link} is your password reset link`,
+            subject: 'Password reset link',
+            message: `${link} is your password reset link`,
           });
           res.status(200).json({
             status: 'success',
             data: {
-              message: 'Check your email for your password reset link',
+              message: 'Check your email for your password reset link.',
             },
           });
         })
@@ -202,7 +204,7 @@ exports.recover = (req, res, next) => {
       res.status(500).json({
         status: 'failed',
         data: {
-          message: 'Internal server error',
+          message: 'Internal server error!',
         },
       });
     });
@@ -218,11 +220,12 @@ exports.resetPassword = (req, res, next) => {
         return res.status(401).json({
           status: 'failed',
           data: {
-            message: 'Password reset token is invalid or has expired!',
+            message:
+              'Password reset token is invalid or has expired. Please request a new link and try again. If the problem persists, please contact support at support@fourseveneight.com',
           },
         });
       user.password = req.body.password;
-      user.resetPasswordToken = undefined;
+      user.resetPasswordToken = undefined; //Set these fields to undefined
       user.resetPasswordExpires = undefined;
       bcrypt.genSalt(10, (err, salt) => {
         //Generate a salt
@@ -237,8 +240,9 @@ exports.resetPassword = (req, res, next) => {
             .then(() => {
               sendEmail({
                 email: user.email,
-                subject: 'Confirming reset password',
-                message: 'Your password was successfully reset!',
+                subject: 'Confirm reset password',
+                message:
+                  'Your password was recently reset. If this was not you, please contact support immediately at support@fourseveneight.com',
               });
               //then send a success message (just a json for now)
               res.status(200).json({
@@ -253,7 +257,7 @@ exports.resetPassword = (req, res, next) => {
               res.status(500).json({
                 status: 'failed',
                 data: {
-                  message: 'internal server error!',
+                  message: 'Internal server error!',
                 },
               });
             });

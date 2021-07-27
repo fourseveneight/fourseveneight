@@ -64,6 +64,7 @@ postSchema.pre(/^find/, function (next) {
     path: 'authors',
     select: '-__v -resetPasswordToken -resetPasswordExpires -passwordChangedAt',
   });
+  next();
 });
 
 postSchema.pre('save', function (next) {

@@ -1,18 +1,11 @@
-const express = require('express'); //Import express
-const postController = require('../controllers/postController'); //Import necessary controllers
-// const { verifyAuthenticated, restrictTo } = require('../auth/auth');
+const express = require('express');
+const postController = require('../controllers/postController');
 
-const router = express.Router(); //Initialize express router
-
-router
-  .route('/') //Route on /api/v1/posts/
-  .get(postController.getAllPosts) //get all posts
-  .post(postController.createPost); //create new post
+const router = express.Router();
 
 router
-  .route('/:slug') //Make slug a query parameter
-  .get(postController.getPost) //get post
-  .patch(postController.updatePost) //update post
-  .delete(postController.deletePost); //delete post
+  .route('/')
+  .get(postController.getAllPosts)
+  .post(postController.createPost);
 
-module.exports = router; //export router for use in app.js
+module.exports = router;

@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
-const slugify = require('slugify');
 
 const commentSchema = new mongoose.Schema(
   {
     content: {
       type: String,
       required: [true, 'Comment must have content!'],
+      maxlength: 600,
     },
     timestamp: {
       type: Date,
@@ -15,19 +15,22 @@ const commentSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    author: {
+      type: mongoose.Schema.ObjectId, //Only one user can leave a specific comment
+      ref: 'User',
+      required: [true, 'A comment must have an author!'],
+    },
+    post: {
+      type: mongoose.Schema.ObjectId, //A comment can only belong to one post
+      ref: 'Post',
+      required: [true, 'A comment must have an associated post!'],
+    },
   },
   {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }
 );
-
-commentSchema.pre('save', function (next) {
-  this.slug = slugify(this.name, {
-    lower: true,
-  });
-  next();
-});
 
 const Comment = mongoose.model('Comment', commentSchema);
 module.exports = Comment;

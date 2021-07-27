@@ -33,6 +33,23 @@ const postSchema = new mongoose.Schema( //Initialize new schema
       type: [String],
       required: [true, 'An article must have at least one tag!'],
     },
+    length: {
+      type: String,
+      enum: ['short', 'medium', 'long'],
+      required: true,
+    },
+    difficulty: {
+      type: String,
+      enum: ['beginner', 'intermediate', 'advanced'],
+      required: false,
+    },
+    images: {
+      type: [String],
+    },
+    likes: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     toJSON: { virtuals: true },

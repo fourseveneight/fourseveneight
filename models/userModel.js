@@ -55,6 +55,14 @@ const userSchema = new mongoose.Schema(
       type: Date,
       required: false,
     },
+    confirmedEmail: {
+      type: Boolean,
+      default: false,
+    },
+    spaces: {
+      type: [String],
+      required: false,
+    },
     bio: {
       type: String,
       required: false,

@@ -38,7 +38,6 @@ const userSchema = new mongoose.Schema(
     },
     active: {
       type: Boolean,
-      select: false,
       default: false,
     },
     accountCreatedAt: {
@@ -56,8 +55,16 @@ const userSchema = new mongoose.Schema(
       type: Date,
       required: false,
     },
+    bio: {
+      type: String,
+      required: false,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
 userSchema.methods.generateJWT = function () {

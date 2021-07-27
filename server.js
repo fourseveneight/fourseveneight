@@ -1,7 +1,6 @@
 /********************************************************
  *
  * *Server setup.
- * * //TODO: Store session data in MongoDB
  *
  * *****************************************************/
 
@@ -61,10 +60,10 @@ mongoose //connect DB
     // eslint-disable-next-line no-console
     console.log(err);
   });
-const articleRouter = require('./routes/articleRoutes'); //require article router for /api/v1/articles routes
+const articleRouter = require('./routes/postRoutes'); //require article router for /api/v1/articles routes
 const userRouter = require('./routes/userRoutes');
 
-app.use('/api/v1/articles', articleRouter); //Use articleRouter on /api/v1/articles calls
+app.use('/api/v1/posts', articleRouter); //Use articleRouter on /api/v1/articles calls
 app.use('/api/v1/users', userRouter);
 
 const server = app.listen(port); //Start server on port

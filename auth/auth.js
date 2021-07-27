@@ -44,7 +44,7 @@ module.exports = {
     if (req.user.role === 'admin' || req.user.role === 'root') {
       return next();
     }
-    res.status(403).json({
+    return res.status(403).json({
       status: 'failed',
       data: {
         message: 'unable to authorize',

@@ -1,15 +1,46 @@
 /* eslint-disable no-shadow */
+//TODO: Convert functions to more readable format using catchAsync + async/await
 const passport = require('passport'); //get passport
 const bcrypt = require('bcryptjs');
 const factory = require('./handlerFactory'); //import factory
 const User = require('../models/userModel'); //import user model
 const sendEmail = require('../util/email'); //Import email send utility
+const catchAsync = require('../util/catchAsync');
 
-//TODO: Protect these routes
+/**
+ * @route GET /api/v1/users/users
+ * @description root/admin can query for all users with this route
+ * @access private
+ * @access protected
+ */
 exports.getAllUsers = factory.getAll(User);
+/**
+ * @route GET /api/v1/users/user/:id
+ * @description root/admin can query for a specific user
+ * @access private
+ * @access protected
+ */
 exports.getUser = factory.getOne(User);
+/**
+ * @route PATCH /api/v1/users/update/:id
+ * @description root/admin can update a user's settings. This is important for administrative purposes, i.e. giving admin privileges
+ * @access private
+ * @access protected
+ */
 exports.updateUser = factory.updateOne(User);
+/**
+ * @route DELETE /api/v1/users/delete/:id
+ * @description root/admin can delete a user completely from the database
+ * @access private
+ * @access protected
+ */
 exports.deleteUser = factory.deleteOne(User);
+
+/**
+ * @route GET /api/v1/users/login
+ * @description displays login page (currently doesn't exist as frontend has not been built)
+ * @access public
+ */
 
 exports.showLoginPage = (req, res) => {
   res.status(200).json({
@@ -21,6 +52,12 @@ exports.showLoginPage = (req, res) => {
   });
 };
 
+/**
+ * @route GET /api/v1/users/register
+ * @description displays register page (currently doesn't exist as frontend has not been built)
+ * @access public
+ */
+
 exports.showRegisterPage = (req, res) => {
   res.status(200).json({
     status: 'success',
@@ -30,13 +67,25 @@ exports.showRegisterPage = (req, res) => {
   });
 };
 
-//*This route needs to be modified once a proper frontend is built.
+/**
+ * @route POST /api/v1/users/login
+ * @description displays dashboard (currently doesn't exist as frontend has not been built)
+ * @access private
+ */
+
 exports.login = (req, res, next) => {
   passport.authenticate('local', {
     successRedirect: '/success',
     failureRedirect: '/failure',
   })(req, res, next);
 };
+
+/**
+ * @route POST /api/v1/users/register
+ * @description New users register using this route.
+ * @access public
+ *
+ */
 
 exports.register = (req, res) => {
   //registration function
@@ -129,6 +178,13 @@ exports.register = (req, res) => {
   }
 };
 
+/**
+ * @route /api/v1/users/confirm
+ * @description New users activate their account using this route
+ * @access private-(ish).
+ *
+ */
+
 exports.confirmAccount = (req, res, next) => {
   User.findOne({ _id: req.params.id }).then((user) => {
     //Find user by /:id in querystring
@@ -153,6 +209,13 @@ exports.confirmAccount = (req, res, next) => {
   });
 };
 
+/**
+ * @route /api/v1/users/logout
+ * @description Users logout with this route
+ * @access private
+ *
+ */
+
 exports.logout = (req, res, next) => {
   req.logout();
   res.status(200).json({
@@ -162,6 +225,13 @@ exports.logout = (req, res, next) => {
     },
   });
 };
+
+/**
+ * @route /api/v1/users/recover
+ * @description Users request a password reset email with this route
+ * @access public
+ *
+ */
 
 exports.recover = (req, res, next) => {
   User.findOne({ email: req.body.email })
@@ -209,6 +279,13 @@ exports.recover = (req, res, next) => {
       });
     });
 };
+
+/**
+ * @route /api/v1/users/reset
+ * @description Users reset their password with this
+ * @access private (Need a valid JWT for the route to work)
+ *
+ */
 
 exports.resetPassword = (req, res, next) => {
   User.findOne({
@@ -273,3 +350,73 @@ exports.resetPassword = (req, res, next) => {
       });
     });
 };
+
+/**
+ * @param obj: object to filter
+ * @param  {...any} allowed: allowed fields
+ * @returns: sanitized object
+ */
+
+const filteredObj = (obj, ...allowed) => {
+  const newObj = {};
+  Object.keys(obj).forEach((el) => {
+    if (allowed.includes(el)) {
+      newObj[el] = obj[el];
+    }
+  });
+  return newObj;
+};
+
+/**
+ * @route /api/v1/users/settings
+ * @description Users modify their settings with this route
+ * @access private (Must be logged in for req.user to be defined)
+ *
+ */
+
+exports.editSettings = catchAsync(async (req, res, next) => {
+  const filteredBody = filteredObj(req.body, 'name', 'bio');
+  const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
+    new: true,
+    runValidators: true,
+  });
+  res.status(200).json({
+    status: 'success',
+    data: {
+      message: 'Settings successfully updated!',
+      updatedUser,
+    },
+  });
+});
+
+/**
+ * @route /api/v1/users/delete
+ * @description Users deactivate their account with this route
+ * !Does not delete user from database. Only I (root) can do that. This route simply sets their active status to false!
+ * @access private
+ *
+ */
+
+exports.deleteAccount = catchAsync(async (req, res, next) => {
+  User.findByIdAndUpdate(
+    req.user.id,
+    { active: false },
+    { new: true, runValidators: true }
+  )
+    .then(() => {
+      res.status(204).json({
+        status: 'success',
+        data: {
+          message: 'Account successfully deleted.',
+        },
+      });
+    })
+    .catch(() => {
+      res.status(500).json({
+        status: 'failed',
+        data: {
+          message: 'Internal server error!',
+        },
+      });
+    });
+});

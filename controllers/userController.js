@@ -90,7 +90,17 @@ exports.login = (req, res, next) => {
 
 exports.register = (req, res) => {
   //registration function
-  const { name, email, username, password, passwordConfirm } = req.body; //Destructure body into 5 variables
+  const filteredBody = sanitizeBody(
+    req.body,
+    'name',
+    'email',
+    'username',
+    'password',
+    'passwordConfirm',
+    'bio',
+    'spaces'
+  );
+  const { name, email, username, password, passwordConfirm } = filteredBody; //Destructure body into 5 variables
   const errors = []; //Initialize errors as an empty array
 
   if (!name || !email || !password || !passwordConfirm || !username) {
@@ -129,13 +139,7 @@ exports.register = (req, res) => {
           },
         });
       } else {
-        const newUser = new User({
-          //Otherwise create a new user with all this jank
-          name,
-          email,
-          password,
-          username,
-        });
+        const newUser = new User(filteredBody);
 
         bcrypt.genSalt(10, (err, salt) => {
           //Generate a salt
@@ -197,7 +201,16 @@ exports.confirmAccount = (req, res, next) => {
         },
       });
     }
+    if (user.confirmedEmail === true) {
+      res.status(400).json({
+        status: 'failure',
+        data: {
+          message: 'Email already confirmed!',
+        },
+      });
+    }
     user.active = true; //Set active to true
+    user.confirmedEmail = true;
     user.save().then(() => {
       //Save the user
       res.status(200).json({

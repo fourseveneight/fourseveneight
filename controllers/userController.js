@@ -6,6 +6,7 @@ const factory = require('./handlerFactory'); //import factory
 const User = require('../models/userModel'); //import user model
 const sendEmail = require('../util/email'); //Import email send utility
 const catchAsync = require('../util/catchAsync');
+const { sanitizeBody } = require('../auth/auth');
 
 /**
  * @route GET /api/v1/users/users
@@ -352,22 +353,6 @@ exports.resetPassword = (req, res, next) => {
 };
 
 /**
- * @param obj: object to filter
- * @param  {...any} allowed: allowed fields
- * @returns: sanitized object
- */
-
-const filteredObj = (obj, ...allowed) => {
-  const newObj = {};
-  Object.keys(obj).forEach((el) => {
-    if (allowed.includes(el)) {
-      newObj[el] = obj[el];
-    }
-  });
-  return newObj;
-};
-
-/**
  * @route /api/v1/users/settings
  * @description Users modify their settings with this route
  * @access private (Must be logged in for req.user to be defined)
@@ -375,7 +360,7 @@ const filteredObj = (obj, ...allowed) => {
  */
 
 exports.editSettings = catchAsync(async (req, res, next) => {
-  const filteredBody = filteredObj(req.body, 'name', 'bio');
+  const filteredBody = sanitizeBody(req.body, 'name', 'bio');
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
     new: true,
     runValidators: true,

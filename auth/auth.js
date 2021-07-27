@@ -6,17 +6,14 @@
  * **********************************************/
 
 module.exports = {
-  sanitizeBody: function (req, res, next) {
-    const body = { ...req.body };
-    if (Object.prototype.hasOwnProperty.call(body, 'role')) {
-      res.status(403).send({
-        status: 'failed',
-        data: {
-          message: 'current account not authorized to designate role!',
-        },
-      });
-    }
-    next();
+  sanitizeBody: function (obj, ...allowed) {
+    const sanitizedObject = {};
+    Object.keys(obj).forEach((el) => {
+      if (allowed.includes(el)) {
+        sanitizedObject[el] = obj[el];
+      }
+    });
+    return sanitizedObject;
   },
   checkStatus: function (req, res, next) {
     if (req.user.active === true) {

@@ -3,6 +3,8 @@ const userController = require('../controllers/userController'); //import contro
 
 const router = express.Router(); //initialize router
 
+router.route('/').get(userController.getAllUsers);
+
 router
   .route('/login') //on /login
   .get(userController.showLoginPage)

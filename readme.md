@@ -1,6 +1,6 @@
 # FourSevenEight is a website for sharing news, primarily in the tech industry
 
-1. It is meant to provide high quality, factual articles about technology, finance, and science
+1. It is meant to provide high quality, factual posts about technology, finance, and science
 2. It is meant to be an open forum for discussing these subjects
 
 ## Usage of my code:

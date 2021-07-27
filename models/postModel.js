@@ -5,15 +5,15 @@ const postSchema = new mongoose.Schema( //Initialize new schema
   {
     name: {
       type: String,
-      required: [true, 'Article name required'],
+      required: [true, 'Post name required'],
     },
     content: {
       type: String,
-      required: [true, 'Article must have content'],
+      required: [true, 'Post must have content'],
     },
     date: {
       type: Date,
-      required: [true, 'Article must have a date'],
+      required: [true, 'Post must have a date'],
       default: Date.now(),
     },
     active: {
@@ -31,7 +31,7 @@ const postSchema = new mongoose.Schema( //Initialize new schema
     ],
     tags: {
       type: [String],
-      required: [true, 'An article must have at least one tag!'],
+      required: [true, 'A post must have at least one tag!'],
     },
     length: {
       type: String,
@@ -75,4 +75,5 @@ postSchema.pre('save', function (next) {
 });
 
 const Post = mongoose.model('Post', postSchema); //Model schema
+
 module.exports = Post; //Export schema

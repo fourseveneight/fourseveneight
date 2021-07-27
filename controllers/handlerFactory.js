@@ -19,10 +19,17 @@ exports.getAll = (Model) =>
     });
   });
 
-exports.getOne = (Model) =>
+exports.getOne = (Model, popOptions) =>
   catchAsync(async (req, res, next) => {
-    const query = Model.find({ slug: req.params.slug });
+    let query = Model.find({ slug: req.params.slug });
+    if (popOptions) query = query.populate(popOptions);
+
     const doc = await query;
+    if (!doc)
+      return res.status(404).json({
+        status: 'failed',
+        data: { message: 'could not find document!' },
+      });
     res.status(200).json({
       status: 'success',
       data: {

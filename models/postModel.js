@@ -29,6 +29,10 @@ const postSchema = new mongoose.Schema( //Initialize new schema
         ref: 'User',
       },
     ],
+    tags: {
+      type: [String],
+      required: [true, 'An article must have at least one tag!'],
+    },
   },
   {
     toJSON: { virtuals: true },

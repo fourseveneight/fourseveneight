@@ -4,7 +4,7 @@ const { getHotPosts } = require('../tools/algorithms');
 const {
   verifyAuthenticated,
   checkStatus,
-  verifyUserOriginalAuthor,
+  verifyUserOriginalAuthorOfPost,
 } = require('../auth/auth');
 
 const router = express.Router();
@@ -25,12 +25,12 @@ router
   .get(postController.getPost)
   .patch(
     verifyAuthenticated,
-    verifyUserOriginalAuthor,
+    verifyUserOriginalAuthorOfPost,
     postController.updatePost
   )
   .delete(
     verifyAuthenticated,
-    verifyUserOriginalAuthor,
+    verifyUserOriginalAuthorOfPost,
     postController.deletePost
   ); //You don't need an account to view a post, but you needed to be logged in as user who originally created the post (or root) to edit or delete it
 

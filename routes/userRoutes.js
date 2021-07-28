@@ -1,10 +1,10 @@
 /**
  * *User router
+ * *As of July 28, 2021, all routes below have been tested and confirmed to work
  * @author root
  * @description defines all user routes
  * @datestarted July 24, 2021
  * @datecompleted (v1) July 28, 2021
- * *As of July 28, 2021, all routes below have been tested and confirmed to work
  */
 const express = require('express'); //require express
 const userController = require('../controllers/userController'); //import controllers
@@ -39,5 +39,10 @@ router.get('/logout', userController.logout); //* ✓
 router.route('/recover').post(userController.recover); //* ✓
 router.route('/reset/:token').post(userController.resetPassword); //* ✓
 router.route('/confirm/:id').get(userController.confirmAccount); //* ✓
+
+router
+  .route('/settings') //* ✓
+  .get(verifyAuthenticated, checkStatus, userController.getSettingsPage)
+  .patch(verifyAuthenticated, checkStatus, userController.editSettings);
 
 module.exports = router;

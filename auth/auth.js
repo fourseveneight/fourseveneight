@@ -7,6 +7,8 @@
 
 const User = require('../models/userModel');
 const Post = require('../models/postModel');
+const Comment = require('../models/commentModel');
+const factory = require('../controllers/handlerFactory');
 
 module.exports = {
   /**
@@ -76,32 +78,13 @@ module.exports = {
    * @description Used in the route PATCH /api/v1/posts/:slug to update a post. Verifies if the user attempting to make the edit is the same use that created the post
    * @returns next() if successful, error message if not
    */
-  verifyUserOriginalAuthor: async function (req, res, next) {
-    const user = await User.findById(req.user._id);
-    const post = await Post.findOne({ slug: req.params.slug });
-    if (!user || !post) {
-      return res.status(403).json({
-        status: 'failed',
-        data: {
-          message: 'Unable to fulfill request!',
-        },
-      });
-    }
-    if (req.user.role === 'root') {
-      //If user has root/SuperUser privileges (aka, me), skip the next middleware.
-      return next();
-    }
-    for (let i = 0; i < post.authors.length; i += 1) {
-      if (String(post.authors[i]._id) === String(user._id)) {
-        break;
-      }
-      return res.status(403).json({
-        status: 'failed',
-        data: {
-          message: 'Current account not authorized for this action!',
-        },
-      });
-    }
-    next();
-  },
+  verifyUserOriginalAuthorOfPost: factory.verifyUserOriginalAuthor(User, Post),
+  /**
+   * @description Used in the route PATCH /api/v1/comments/:id to update a comment. Verifies if the user attempting to make the edit is the same use that created the comment
+   * @returns next() if successful, error message if not
+   */
+  verifyUserOriginalAuthorOfComment: factory.verifyUserOriginalAuthor(
+    User,
+    Comment
+  ),
 };

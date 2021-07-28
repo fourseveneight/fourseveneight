@@ -6,10 +6,16 @@
  *****************************************************/
 
 const catchAsync = require('../util/catchAsync');
+const APIFeatures = require('../util/APIFeatures');
 
 exports.getAll = (Model) =>
   catchAsync(async (req, res, next) => {
-    const doc = await Model.find();
+    const filter = {};
+    const features = new APIFeatures(Model.find(filter), req.query)
+      .filter()
+      .sort()
+      .paginate();
+    const doc = await features.query;
     res.status(200).json({
       status: 'success',
       results: doc.length,

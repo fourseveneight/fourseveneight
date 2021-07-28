@@ -13,10 +13,10 @@ class APIFeatures {
 
   filter() {
     //Filter by quantifiable data
-    const queryObj = { ...this.queryString };
+    const queryObj = { ...this.queryString }; //Make a shallow copy of the queryString --replace with cloneDeep later
     const excludedFields = ['sort', 'page', 'limit']; //We don't want to use these fields to query in the db, only to implement API features
     excludedFields.forEach((el) => {
-      delete queryObj[el];
+      delete queryObj[el]; //Remove them from
     });
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(lte|lt|gte|gt)\b/g, (match) => `$${match}`);
@@ -35,8 +35,8 @@ class APIFeatures {
   }
 
   paginate() {
-    const page = this.queryString.page || 1;
-    const limit = this.queryString.limit || 5;
+    const page = +this.queryString.page || 1;
+    const limit = +this.queryString.limit || 5;
     const skip = (page - 1) * limit;
     this.query = this.query.skip(skip).limit(limit);
     return this;

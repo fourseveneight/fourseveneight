@@ -1,5 +1,10 @@
 const express = require('express');
 const commentController = require('../controllers/commentController');
+const {
+  verifyAuthenticated,
+  verifyUserOriginalAuthor,
+  checkStatus,
+} = require('../auth/auth');
 
 const router = express.Router();
 

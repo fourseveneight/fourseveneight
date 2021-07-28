@@ -82,3 +82,33 @@ exports.updateOne = (Model) =>
       },
     });
   });
+
+exports.verifyUserOriginalAuthor = (modelOne, modelTwo) =>
+  catchAsync(async (req, res, next) => {
+    const user = await modelOne.findById(req.user._id);
+    const document = await modelTwo.findOne({ slug: req.params.slug });
+    if (!user || !document) {
+      return res.status(403).json({
+        status: 'failed',
+        data: {
+          message: 'Unable to fulfill request!',
+        },
+      });
+    }
+    if (req.user.role === 'root') {
+      //If user has root/SuperUser privileges (aka, me), skip the next middleware.
+      return next();
+    }
+    for (let i = 0; i < document.authors.length; i += 1) {
+      if (String(document.authors[i]._id) === String(user._id)) {
+        break;
+      }
+      return res.status(403).json({
+        status: 'failed',
+        data: {
+          message: 'Current account not authorized for this action!',
+        },
+      });
+    }
+    next();
+  });

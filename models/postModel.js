@@ -62,7 +62,7 @@ postSchema.index({ slug: 1 });
 postSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'authors',
-    select: '-__v -resetPasswordToken -resetPasswordExpires -passwordChangedAt',
+    select: 'name email role id',
   });
   next();
 });

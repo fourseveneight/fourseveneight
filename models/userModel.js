@@ -67,6 +67,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+    followers: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
   { timestamps: true },
   {
@@ -93,6 +99,14 @@ userSchema.methods.generatePasswordResetToken = function () {
   this.resetPasswordToken = crypto.randomBytes(20).toString('hex');
   this.resetPasswordExpires = Date.now() + 3600000;
 };
+
+userSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'followers',
+    select: 'name',
+  });
+  next();
+});
 
 const User = mongoose.model('User', userSchema);
 module.exports = User;

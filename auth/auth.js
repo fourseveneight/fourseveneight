@@ -56,15 +56,17 @@ module.exports = {
    * @description Restricts certain routes by current user's role
    * @returns next() if the user's role is admin or root
    */
-  restrictTo: function (req, res, next) {
-    if (req.user.role === 'admin' || req.user.role === 'root') {
-      return next();
-    }
-    return res.status(403).json({
-      status: 'failed',
-      data: {
-        message: 'unable to authorize',
-      },
-    });
+  restrictTo: function (...roles) {
+    return (req, res, next) => {
+      if (!roles.includes(req.user.role)) {
+        return res.status(403).json({
+          status: 'failed',
+          data: {
+            message: 'Current account not authorized for this action!',
+          },
+        });
+      }
+      next();
+    };
   },
 };

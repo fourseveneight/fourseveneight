@@ -1,4 +1,12 @@
 /* eslint-disable no-shadow */
+/**
+ * *User controller
+ * *As of July 28, 2021, all functions defined below have been tested and confirmed to work
+ * @author root
+ * @description Defines all functions relevant to a user, i.e. logging in, logging out, confirming account, resetting password, etc.
+ * @datestarted July 24, 2021
+ * @datecompleted July 28, 2021
+ */
 //TODO: Convert functions to more readable format using catchAsync + async/await
 const passport = require('passport'); //get passport
 const bcrypt = require('bcryptjs');
@@ -366,7 +374,7 @@ exports.resetPassword = (req, res, next) => {
 };
 
 /**
- * @route /api/v1/users/settings
+ * @route PATCH /api/v1/users/settings
  * @description Users modify their settings with this route
  * @access private (Must be logged in for req.user to be defined)
  *
@@ -417,4 +425,34 @@ exports.deleteAccount = catchAsync(async (req, res, next) => {
         },
       });
     });
+});
+
+/**
+ * @route GET /api/v1/users/dashboard
+ * @description Fetches the currently logged in user's dashboard
+ * @access private
+ */
+
+exports.showDashboard = catchAsync(async (req, res, next) => {
+  res.status(200).json({
+    status: 'success',
+    data: {
+      message: 'Dashboard would be rendered here',
+    },
+  });
+});
+
+/**
+ * @route GET /api/v1/users/settings
+ * @description Show's user's current settings
+ * @access private
+ */
+
+exports.getSettingsPage = catchAsync(async (req, res, next) => {
+  res.status(200).json({
+    status: 'success',
+    data: {
+      message: 'settings page would be rendered here',
+    },
+  });
 });

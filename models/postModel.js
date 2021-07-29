@@ -1,15 +1,18 @@
 const mongoose = require('mongoose'); //Import mongoose
 const slugify = require('slugify'); //Import slugify
+const tags = require('../keys/spaces');
 
 const postSchema = new mongoose.Schema( //Initialize new schema
   {
     name: {
       type: String,
       required: [true, 'Post name required'],
+      unique: true,
     },
     content: {
       type: String,
       required: [true, 'Post must have content'],
+      unique: true,
     },
     date: {
       type: Date,
@@ -22,6 +25,7 @@ const postSchema = new mongoose.Schema( //Initialize new schema
     },
     slug: {
       type: String,
+      unique: true,
     },
     authors: [
       {
@@ -31,6 +35,7 @@ const postSchema = new mongoose.Schema( //Initialize new schema
     ],
     tags: {
       type: [String],
+      enum: tags,
       required: [true, 'A post must have at least one tag!'],
     },
     length: {
@@ -50,6 +55,17 @@ const postSchema = new mongoose.Schema( //Initialize new schema
       type: Number,
       default: 0,
     },
+    comments: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'Comment',
+      },
+    ],
+
+    commentsActive: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     toJSON: { virtuals: true },
@@ -63,6 +79,14 @@ postSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'authors',
     select: 'name email role id',
+  });
+  next();
+});
+
+postSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'comments',
+    select: 'authors content active',
   });
   next();
 });

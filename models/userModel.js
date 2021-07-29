@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const spaces = require('../keys/spaces');
 
 const userSchema = new mongoose.Schema(
   {
@@ -61,6 +62,7 @@ const userSchema = new mongoose.Schema(
     },
     spaces: {
       type: [String],
+      enum: spaces,
       required: false,
     },
     bio: {
@@ -71,6 +73,12 @@ const userSchema = new mongoose.Schema(
       {
         type: mongoose.Schema.ObjectId,
         ref: 'User',
+      },
+    ],
+    comments: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'Comment',
       },
     ],
   },

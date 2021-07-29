@@ -15,15 +15,25 @@ const commentSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    author: {
-      type: mongoose.Schema.ObjectId, //Only one user can leave a specific comment
-      ref: 'User',
-      required: [true, 'A comment must have an author!'],
+    authors: [
+      {
+        type: mongoose.Schema.ObjectId, //Only one user can leave a specific comment
+        ref: 'User',
+        required: [true, 'A comment must have an author!'],
+      },
+    ],
+    active: {
+      type: Boolean,
+      default: true,
     },
     post: {
       type: mongoose.Schema.ObjectId, //A comment can only belong to one post
       ref: 'Post',
       required: [true, 'A comment must have an associated post!'],
+    },
+    superUserModified: {
+      type: Boolean,
+      default: false,
     },
   },
   {

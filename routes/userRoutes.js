@@ -1,7 +1,7 @@
 /**
  * *User router
  * *As of July 28, 2021, all routes below have been tested and confirmed to work
- * @author root
+ * @author anishsinha
  * @description defines all user routes
  * @datestarted July 24, 2021
  * @datecompleted (v1) July 28, 2021
@@ -13,13 +13,13 @@ const {
   verifyAuthenticated,
   restrictTo,
   checkStatus,
-} = require('../auth/auth');
+} = require('../auth/authFunctions');
 
 const router = express.Router(); //initialize router
 
 router
   .route('/') //* ✓
-  .get(verifyAuthenticated, restrictTo('root'), userController.getAllUsers);
+  .get(verifyAuthenticated, restrictTo('root'), userController._getAllUsers);
 
 router
   .route('/login') //on /login //* ✓
@@ -44,5 +44,9 @@ router
   .route('/settings') //* ✓
   .get(verifyAuthenticated, checkStatus, userController.getSettingsPage)
   .patch(verifyAuthenticated, checkStatus, userController.editSettings);
+
+router
+  .route('/delete') //* ✓
+  .delete(verifyAuthenticated, checkStatus, userController.deleteAccount);
 
 module.exports = router;

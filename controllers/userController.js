@@ -2,7 +2,7 @@
 /**
  * *User controller
  * *As of July 28, 2021, all functions defined below have been tested and confirmed to work
- * @author root
+ * @author anishsinha
  * @description Defines all functions relevant to a user, i.e. logging in, logging out, confirming account, resetting password, etc.
  * @datestarted July 24, 2021
  * @datecompleted July 28, 2021
@@ -14,36 +14,32 @@ const factory = require('./handlerFactory'); //import factory
 const User = require('../models/userModel'); //import user model
 const sendEmail = require('../util/email'); //Import email send utility
 const catchAsync = require('../util/catchAsync');
-const { sanitizeBody } = require('../auth/auth');
+const { sanitizeBody } = require('../auth/authFunctions');
 
 /**
  * @route GET /api/v1/users/users
  * @description root/admin can query for all users with this route
  * @access private
- * @access protected
  */
-exports.getAllUsers = factory.getAll(User);
+exports._getAllUsers = factory.getAll(User);
 /**
  * @route GET /api/v1/users/user/:id
  * @description root/admin can query for a specific user
  * @access private
- * @access protected
  */
-exports.getUser = factory.getOne(User);
+exports._getUser = factory.getOne(User);
 /**
  * @route PATCH /api/v1/users/update/:id
  * @description root/admin can update a user's settings. This is important for administrative purposes, i.e. giving admin privileges
  * @access private
- * @access protected
  */
-exports.updateUser = factory.updateOne(User);
+exports._updateUser = factory.updateOne(User);
 /**
  * @route DELETE /api/v1/users/delete/:id
  * @description root/admin can delete a user completely from the database
  * @access private
- * @access protected
  */
-exports.deleteUser = factory.deleteOne(User);
+exports._deleteUser = factory.deleteOne(User);
 
 /**
  * @route GET /api/v1/users/login
@@ -79,7 +75,7 @@ exports.showRegisterPage = (req, res) => {
 /**
  * @route POST /api/v1/users/login
  * @description displays dashboard (currently doesn't exist as frontend has not been built)
- * @access private
+ * @access protected
  */
 
 exports.login = (req, res, next) => {
@@ -104,9 +100,7 @@ exports.register = (req, res) => {
     'email',
     'username',
     'password',
-    'passwordConfirm',
-    'bio',
-    'spaces'
+    'passwordConfirm'
   );
   const { name, email, username, password, passwordConfirm } = filteredBody; //Destructure body into 5 variables
   const errors = []; //Initialize errors as an empty array
@@ -239,13 +233,22 @@ exports.confirmAccount = (req, res, next) => {
  */
 
 exports.logout = (req, res, next) => {
-  req.logout();
-  res.status(200).json({
-    status: 'success',
-    data: {
-      message: 'Successfully logged out!',
-    },
-  });
+  if (req.user) {
+    req.logout();
+    res.status(200).json({
+      status: 'success',
+      data: {
+        message: 'Successfully logged out!',
+      },
+    });
+  } else {
+    res.status(403).json({
+      status: 'failed',
+      data: {
+        message: 'no user to log out!',
+      },
+    });
+  }
 };
 
 /**

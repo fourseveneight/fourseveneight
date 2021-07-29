@@ -62,11 +62,11 @@ mongoose //connect DB
   });
 const postRouter = require('./routes/postRoutes'); //require post router for /api/v1/posts routes
 const userRouter = require('./routes/userRoutes');
-const commentRouter = require('./routes/commentRoutes');
+const adminRouter = require('./routes/adminRoutes');
 
 app.use('/api/v1/posts', postRouter); //Use postRouter on /api/v1/posts calls
 app.use('/api/v1/users', userRouter); //Use userRouter on /api/v1/users calls
-app.use('/api/v1/comments', commentRouter); //Use commentRouter on /api/v1/comments calls
+app.use('/api/v1/admin', adminRouter); //Use commentRouter on /api/v1/comments calls
 
 const server = app.listen(port); //Start server on port
 
